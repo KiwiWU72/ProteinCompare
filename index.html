@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resilience System — 人體恢復力系統</title>
+
+  <!-- Inter UI font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ================================================================
+       DESIGN TOKENS — Family Style System
+       ================================================================ */
+    :root {
+      /* Surfaces */
+      --canvas:          #fbfaf9;   /* Page background — warm cream                    */
+      --card-white:      #ffffff;   /* White card surface                               */
+      --card-parchment:  #f8f7f4;   /* Recessed panel / screenshot container            */
+      --stone-surface:   #f2f0ed;   /* Inset border ref / secondary button bg           */
+      --dark-shell:      #000000;   /* Phone mockup / deep dark                         */
+
+      /* Text */
+      --charcoal:        #343433;   /* Headings, nav links                              */
+      --graphite:        #474645;   /* Body text — dominant across page                 */
+      --ash:             #848281;   /* Muted / secondary labels                         */
+      --fog:             #c6c6c6;   /* Footer / inactive dividers                       */
+      --midnight:        #121212;   /* CTA pill dark background                         */
+
+      /* Brand accents */
+      --ember:           #ff3e00;   /* Primary orange — CTAs, inline links              */
+      --meadow:          #00ca48;   /* Green — pros / success                           */
+      --sky:             #0090ff;   /* Blue — informational / soy protein               */
+      --sunburst:        #ffbb26;   /* Yellow — coin / collagen accent                  */
+      --deep-amber:      #d48f00;   /* Amber stroke on yellow elements                  */
+      --flamingo:        #ff58ae;   /* Pink — cons / caution                            */
+      --spearmint:       #00c978;   /* Green stroke variant                             */
+      --ice-blue:        #64c6ff;   /* Light blue illustration fill                     */
+
+      /* Shadows */
+      --shadow-card:     #f2f0ed 0px 0px 0px 1px inset;   /* Warm stone inset border   */
+      --shadow-nav:      rgba(0,0,0,0.04) 0px 0px 0px 1px;
+      --shadow-elevated: rgba(0,0,0,0.04) 0px 1px 6px 0px,
+                         rgba(0,0,0,0.05) 0px 0px 24px 0px;
+      --shadow-phone:    rgba(0,0,0,0.15) 0px 0px 24px 0px;
+
+      /* Typography */
+      --font-display:    'Fraunces', Georgia, 'Times New Roman', serif;
+      --font-ui:         'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+      /* Spacing */
+      --sp-4:  4px;  --sp-8:  8px;  --sp-12: 12px; --sp-16: 16px;
+      --sp-20: 20px; --sp-24: 24px; --sp-32: 32px; --sp-36: 36px;
+      --sp-48: 48px; --sp-60: 60px; --sp-80: 80px; --sp-96: 96px;
+      --sp-120: 120px;
+
+      /* Radius */
+      --r-tag:   6px;
+      --r-card:  10px;
+      --r-cardlg: 24px;
+      --r-pill:  32px;
+      --r-icon:  40px;
+      --r-blob:  72px;
+    }
+
+    /* ================================================================
+       RESET & BASE
+       ================================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--graphite);
+      font-family: var(--font-ui);
+      font-size: 15px;
+      line-height: 1.47;
+      letter-spacing: -0.2px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ================================================================
+       NAV
+       ================================================================ */
+    .nav-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: var(--canvas);
+      box-shadow: var(--shadow-nav);
+    }
+
+    nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 64px;
+      padding: 0 var(--sp-24);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-24);
+    }
+
+    /* Logo */
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.2px;
+      color: var(--charcoal);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    /* Blob logo mark — SVG inline */
+    .nav-logo-mark {
+      width: 28px;
+      height: 28px;
+    }
+
+    /* Nav links */
+    .nav-links {
+      display: flex;
+      gap: var(--sp-32);
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.18px;
+      color: var(--charcoal);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover { color: var(--ember); }
+
+    /* Pill buttons in nav */
+    .nav-actions { display: flex; gap: var(--sp-8); align-items: center; }
+
+    .pill-light {
+      display: inline-flex;
+      align-items: center;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.18px;
+      color: var(--midnight);
+      background: var(--stone-surface);
+      border: none;
+      border-radius: var(--r-pill);
+      padding: 8px 18px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease;
+    }
+
+    .pill-light:hover { background: #e8e5e0; }
+
+    .pill-dark {
+      display: inline-flex;
+      align-items: center;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.18px;
+      color: #fff;
+      background: var(--midnight);
+      border: none;
+      border-radius: var(--r-pill);
+      padding: 8px 18px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease;
+    }
+
+    .pill-dark:hover { background: var(--charcoal); }
+
+    /* ================================================================
+       HERO
+       ================================================================ */
+    .hero-section {
+      position: relative;
+      overflow: hidden;
+      padding: var(--sp-96) var(--sp-24) var(--sp-120);
+      text-align: center;
+    }
+
+    /* All illustration characters are absolutely positioned around the headline */
+    .hero-characters {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .char {
+      position: absolute;
+      animation: float 3.6s ease-in-out infinite;
+    }
+
+    /* Stagger each character's float animation */
+    .char:nth-child(1)  { animation-delay: 0s;    }
+    .char:nth-child(2)  { animation-delay: 0.5s;  }
+    .char:nth-child(3)  { animation-delay: 1s;    }
+    .char:nth-child(4)  { animation-delay: 1.5s;  }
+    .char:nth-child(5)  { animation-delay: 2s;    }
+    .char:nth-child(6)  { animation-delay: 0.8s;  }
+    .char:nth-child(7)  { animation-delay: 1.3s;  }
+    .char:nth-child(8)  { animation-delay: 2.2s;  }
+    .char:nth-child(9)  { animation-delay: 0.3s;  }
+    .char:nth-child(10) { animation-delay: 1.8s;  }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      33%       { transform: translateY(-8px) rotate(2deg); }
+      66%       { transform: translateY(-4px) rotate(-1.5deg); }
+    }
+
+    /* Hero text content */
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ash);
+      margin-bottom: var(--sp-24);
+    }
+
+    .hero-eyebrow::before,
+    .hero-eyebrow::after {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
+      background: var(--fog);
+    }
+
+    /* Display headline — Fraunces (Family substitute) */
+    .hero-headline {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: clamp(44px, 7vw, 68px);
+      line-height: 1.09;
+      letter-spacing: -2.11px;
+      color: var(--charcoal);
+      margin-bottom: var(--sp-24);
+    }
+
+    /* Strike-through "Don't buy" */
+    .hero-headline .strike {
+      position: relative;
+      color: var(--fog);
+    }
+
+    .hero-headline .strike::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      top: 52%;
+      height: 4px;
+      background: var(--ember);
+      border-radius: 2px;
+    }
+
+    .hero-body {
+      font-size: 16px;
+      line-height: 1.6;
+      letter-spacing: -0.16px;
+      color: var(--graphite);
+      max-width: 520px;
+      margin: 0 auto var(--sp-36);
+    }
+
+    .hero-body p + p { margin-top: var(--sp-12); }
+
+    /* Inline orange emphasis */
+    .hero-body .orange { color: var(--ember); font-weight: 500; }
+
+    .hero-cta-row {
+      display: flex;
+      gap: var(--sp-8);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cta-dark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.2px;
+      color: #fff;
+      background: var(--midnight);
+      border: none;
+      border-radius: var(--r-pill);
+      padding: 12px 24px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+
+    .cta-dark:hover {
+      background: var(--charcoal);
+      transform: translateY(-1px);
+    }
+
+    .cta-light {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.2px;
+      color: var(--midnight);
+      background: var(--stone-surface);
+      border: none;
+      border-radius: var(--r-pill);
+      padding: 12px 24px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease;
+    }
+
+    .cta-light:hover { background: #e8e5e0; }
+
+    /* Stat chips below CTA */
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: var(--sp-8);
+      margin-top: var(--sp-48);
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: -0.17px;
+      color: var(--graphite);
+      background: var(--card-white);
+      box-shadow: var(--shadow-card);
+      border-radius: var(--r-pill);
+      padding: 8px 16px;
+    }
+
+    .stat-chip .chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+
+    /* ================================================================
+       SECTION LAYOUT
+       ================================================================ */
+    .section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--sp-120) var(--sp-24);
+    }
+
+    .section-intro {
+      margin-bottom: var(--sp-60);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--sp-12);
+    }
+
+    .section-intro.centered {
+      align-items: center;
+      text-align: center;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ember);
+      background: rgba(255,62,0,0.07);
+      border-radius: var(--r-tag);
+      padding: 4px 10px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: clamp(32px, 4vw, 44px);
+      line-height: 1.09;
+      letter-spacing: -1.14px;
+      color: var(--charcoal);
+    }
+
+    .section-body {
+      font-size: 17px;
+      line-height: 1.55;
+      letter-spacing: -0.22px;
+      color: var(--graphite);
+      max-width: 560px;
+    }
+
+    /* ================================================================
+       DIVIDER
+       ================================================================ */
+    .divider {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--sp-24);
+    }
+
+    .divider hr {
+      border: none;
+      border-top: 1px solid var(--stone-surface);
+    }
+
+    /* ================================================================
+       PROTEIN ACCORDION
+       ================================================================ */
+    .protein-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-12);
+    }
+
+    /* Accordion card uses white + inset stone border */
+    .protein-card {
+      background: var(--card-white);
+      box-shadow: var(--shadow-card);
+      border-radius: var(--r-card);
+      overflow: hidden;
+      transition: box-shadow 0.2s ease;
+    }
+
+    .protein-card:hover {
+      box-shadow: var(--shadow-elevated);
+    }
+
+    /* Clickable row */
+    .protein-header {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-16);
+      padding: var(--sp-24) var(--sp-32);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Round color blob icon for each protein */
+    .protein-icon {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      border-radius: var(--r-icon);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .protein-name-block { flex: 1; min-width: 0; }
+
+    .protein-name {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.22px;
+      color: var(--charcoal);
+      line-height: 1.3;
+    }
+
+    .protein-sub {
+      font-size: 13px;
+      letter-spacing: -0.17px;
+      color: var(--ash);
+      margin-top: 2px;
+    }
+
+    /* DIAAS score badge */
+    .diaas-badge {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: -0.12px;
+      padding: 4px 12px;
+      border-radius: var(--r-pill);
+    }
+
+    /* Chevron */
+    .chevron {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      color: var(--fog);
+      transition: transform 0.3s cubic-bezier(0.19,1,0.22,1), color 0.2s ease;
+    }
+
+    .protein-card.open .chevron {
+      transform: rotate(180deg);
+      color: var(--charcoal);
+    }
+
+    /* Accordion body */
+    .protein-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .protein-body-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-16);
+      padding: 0 var(--sp-32) var(--sp-32);
+    }
+
+    /* Detail panels inside accordion */
+    .detail-panel {
+      border-radius: var(--r-card);
+      padding: var(--sp-24);
+    }
+
+    .detail-panel.pros {
+      background: #f0faf3;
+      border: 1px solid #c5ead2;
+    }
+
+    .detail-panel.cons {
+      background: #fff3f5;
+      border: 1px solid #ffd5db;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: var(--sp-12);
+    }
+
+    .detail-panel.pros .panel-title { color: #1a7a3c; }
+    .detail-panel.cons .panel-title { color: #b02030; }
+
+    .detail-panel p {
+      font-size: 14px;
+      line-height: 1.65;
+      letter-spacing: -0.14px;
+      color: var(--graphite);
+    }
+
+    .detail-panel strong { color: var(--charcoal); font-weight: 600; }
+
+    /* ================================================================
+       TABS — TARGETED SOLUTIONS
+       ================================================================ */
+    .tab-nav {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--stone-surface);
+      margin-bottom: var(--sp-48);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tab-nav::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      flex-shrink: 0;
+      background: transparent;
+      border: none;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.18px;
+      color: var(--ash);
+      padding: 12px var(--sp-24);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s ease, border-color 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover { color: var(--charcoal); }
+
+    .tab-btn.active {
+      color: var(--charcoal);
+      border-bottom-color: var(--ember);
+    }
+
+    /* Tab panel grid */
+    .tab-panel { display: none; }
+
+    .tab-panel.active {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-32);
+      align-items: start;
+    }
+
+    /* Formula card — white, inset border */
+    .formula-card {
+      background: var(--card-white);
+      box-shadow: var(--shadow-card);
+      border-radius: var(--r-card);
+      padding: var(--sp-32);
+    }
+
+    .formula-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ember);
+      margin-bottom: var(--sp-12);
+    }
+
+    .formula-title {
+      font-family: var(--font-display);
+      font-size: 23px;
+      font-weight: 500;
+      letter-spacing: -0.44px;
+      line-height: 1.2;
+      color: var(--charcoal);
+      margin-bottom: 4px;
+    }
+
+    .formula-goal {
+      font-size: 13px;
+      letter-spacing: -0.17px;
+      color: var(--ash);
+      margin-bottom: var(--sp-32);
+    }
+
+    /* Ratio bars */
+    .ratio-bars { display: flex; flex-direction: column; gap: var(--sp-16); }
+
+    .ratio-row { display: flex; flex-direction: column; gap: 8px; }
+
+    .ratio-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: -0.17px;
+    }
+
+    .ratio-meta .r-name { color: var(--charcoal); }
+    .ratio-meta .r-pct  { color: var(--ash); }
+
+    .ratio-track {
+      height: 5px;
+      border-radius: 99px;
+      background: var(--stone-surface);
+      overflow: hidden;
+    }
+
+    .ratio-fill {
+      height: 100%;
+      border-radius: 99px;
+    }
+
+    /* Right-side description */
+    .formula-desc { display: flex; flex-direction: column; gap: var(--sp-24); }
+
+    .formula-desc h3 {
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: -0.25px;
+      color: var(--charcoal);
+      margin-bottom: var(--sp-8);
+    }
+
+    .formula-desc p {
+      font-size: 15px;
+      line-height: 1.6;
+      letter-spacing: -0.2px;
+      color: var(--graphite);
+    }
+
+    /* Target chip */
+    .target-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: -0.12px;
+      padding: 5px 14px;
+      border-radius: var(--r-pill);
+    }
+
+    /* Insight box — parchment recessed panel */
+    .insight-box {
+      background: var(--card-parchment);
+      border-radius: var(--r-card);
+      padding: var(--sp-24);
+    }
+
+    .insight-box .i-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ash);
+      margin-bottom: var(--sp-8);
+    }
+
+    .insight-box p {
+      font-size: 14px;
+      line-height: 1.65;
+      letter-spacing: -0.14px;
+      color: var(--graphite);
+    }
+
+    .insight-box strong { color: var(--charcoal); font-weight: 600; }
+
+    /* ================================================================
+       SCROLL FADE-IN
+       ================================================================ */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s cubic-bezier(0.19,1,0.22,1),
+                  transform 0.6s cubic-bezier(0.19,1,0.22,1);
+    }
+
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ================================================================
+       FOOTER
+       ================================================================ */
+    footer {
+      border-top: 1px solid var(--stone-surface);
+      padding: var(--sp-60) var(--sp-24);
+      text-align: center;
+    }
+
+    .disclaimer {
+      display: inline-block;
+      max-width: 640px;
+      font-size: 13px;
+      line-height: 1.65;
+      letter-spacing: -0.17px;
+      color: var(--ash);
+    }
+
+    .disclaimer strong { color: var(--graphite); font-weight: 500; }
+
+    .footer-brand {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--fog);
+      letter-spacing: -0.2px;
+      margin-top: var(--sp-24);
+    }
+
+    /* ================================================================
+       RESPONSIVE
+       ================================================================ */
+    @media (max-width: 900px) {
+      .protein-body-inner { grid-template-columns: 1fr; }
+      .tab-panel.active   { grid-template-columns: 1fr; }
+
+      /* Characters — hide some on small screens */
+      .char.hide-sm { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      .nav-links  { display: none; }
+      .nav-actions .pill-light { display: none; }
+      .protein-header { padding: var(--sp-16) var(--sp-20); }
+      .protein-body-inner { padding: 0 var(--sp-20) var(--sp-24); }
+      .hero-section { padding: var(--sp-60) var(--sp-16) var(--sp-80); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================================================================
+       STICKY NAV
+       ================================================================ -->
+  <div class="nav-wrapper">
+    <nav>
+      <!-- Logo -->
+      <a class="nav-logo" href="#">
+        <!-- Inline blob logo mark -->
+        <svg class="nav-logo-mark" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 3C8 3 4 7.5 4 13.5C4 19 8 25 14 25C20 25 24 19.5 24 14C24 8 20 3 14 3Z" fill="#ff3e00"/>
+          <!-- dot eyes -->
+          <circle cx="10.5" cy="13" r="1.4" fill="#fff"/>
+          <circle cx="17.5" cy="13" r="1.4" fill="#fff"/>
+          <!-- smile -->
+          <path d="M10 17.5 Q14 21 18 17.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <!-- stick legs -->
+          <line x1="11" y1="24" x2="9" y2="28" stroke="#ff3e00" stroke-width="2" stroke-linecap="round"/>
+          <line x1="17" y1="24" x2="19" y2="28" stroke="#ff3e00" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Resilience System
+      </a>
+
+      <!-- Center links -->
+      <ul class="nav-links">
+        <li><a href="#matrix">蛋白質矩陣</a></li>
+        <li><a href="#solutions">精準配比</a></li>
+      </ul>
+
+    </nav>
+  </div>
+
+  <!-- ================================================================
+       HERO — 反脆弱宣言
+       ================================================================ -->
+  <section class="hero-section" id="hero">
+
+    <!-- ── Illustrated blob characters — Family style, Morandi palette ── -->
+    <div class="hero-characters" aria-hidden="true">
+
+      <!-- ══ 1. 乳清 Blob — 亮光炫彩珍珠白，top-left ══ -->
+      <div class="char" style="left:4%; top:7%; width:92px;">
+        <svg viewBox="0 0 94 116" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M47 8C28 8 13 24 13 47C13 70 28 94 47 94C66 94 81 70 81 47C81 24 66 8 47 8Z" fill="#f4f3f0" stroke="#d8d5ce" stroke-width="2"/>
+          <!-- pearl shimmer gradient area -->
+          <ellipse cx="34" cy="28" rx="10" ry="6" fill="white" opacity="0.85" transform="rotate(-22 34 28)"/>
+          <ellipse cx="56" cy="22" rx="5" ry="3" fill="white" opacity="0.6" transform="rotate(-10 56 22)"/>
+          <!-- sparkle star top-right -->
+          <path d="M70 14 L72 20 L78 18 L72 24 L74 30 L68 26 L62 30 L64 24 L58 18 L64 20Z" fill="#ffd84a" opacity="0.75"/>
+          <!-- small sparkle dots -->
+          <circle cx="20" cy="20" r="2" fill="#ffe080" opacity="0.7"/>
+          <circle cx="76" cy="36" r="1.5" fill="#ffe080" opacity="0.6"/>
+          <!-- eyes -->
+          <circle cx="37" cy="47" r="4" fill="#343433"/>
+          <circle cx="57" cy="47" r="4" fill="#343433"/>
+          <circle cx="38.8" cy="45.2" r="1.4" fill="white"/>
+          <circle cx="58.8" cy="45.2" r="1.4" fill="white"/>
+          <!-- smile -->
+          <path d="M37 59 Q47 67 57 59" stroke="#343433" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <!-- arms -->
+          <path d="M15 44 Q5 36 8 24" stroke="#c8c4bc" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M79 44 Q89 36 86 24" stroke="#c8c4bc" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <!-- legs -->
+          <line x1="38" y1="93" x2="31" y2="112" stroke="#c8c4bc" stroke-width="3" stroke-linecap="round"/>
+          <line x1="56" y1="93" x2="63" y2="112" stroke="#c8c4bc" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- ══ 2. 牛奶 Blob — 莫蘭迪淺藍，top-right ══ -->
+      <div class="char" style="right:3%; top:5%; width:84px;">
+        <svg viewBox="0 0 86 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M43 7C25 7 12 23 12 45C12 67 25 88 43 88C61 88 74 67 74 45C74 23 61 7 43 7Z" fill="#8faab8" stroke="#6d8fa0" stroke-width="1.8"/>
+          <!-- milk drop pattern on body -->
+          <ellipse cx="33" cy="36" rx="6" ry="8" fill="#b8cedb" opacity="0.55"/>
+          <ellipse cx="54" cy="44" rx="5" ry="6.5" fill="#b8cedb" opacity="0.45"/>
+          <!-- eyes -->
+          <circle cx="33" cy="45" r="3.8" fill="#343433"/>
+          <circle cx="53" cy="45" r="3.8" fill="#343433"/>
+          <circle cx="34.8" cy="43.2" r="1.3" fill="white"/>
+          <circle cx="54.8" cy="43.2" r="1.3" fill="white"/>
+          <!-- smile -->
+          <path d="M33 57 Q43 65 53 57" stroke="#343433" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- arms -->
+          <path d="M14 41 Q4 32 8 20" stroke="#6d8fa0" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+          <path d="M72 41 Q82 32 78 20" stroke="#6d8fa0" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+          <!-- legs -->
+          <line x1="34" y1="87" x2="29" y2="106" stroke="#6d8fa0" stroke-width="2.8" stroke-linecap="round"/>
+          <line x1="52" y1="87" x2="57" y2="106" stroke="#6d8fa0" stroke-width="2.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- ══ 3. 植物 Blob — 草地綠，mid-left ══ -->
+      <div class="char hide-sm" style="left:1%; top:43%; width:74px;">
+        <svg viewBox="0 0 76 98" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M38 6C22 6 10 19 10 38C10 57 22 74 38 74C54 74 66 57 66 38C66 19 54 6 38 6Z" fill="#7aaa82" stroke="#589060" stroke-width="1.8"/>
+          <!-- two leaves on top -->
+          <path d="M38 6 Q29 -5 20 0 Q29 3 38 6Z" fill="#58906a"/>
+          <path d="M38 6 Q47 -5 56 0 Q47 3 38 6Z" fill="#58906a"/>
+          <!-- eyes -->
+          <circle cx="29" cy="37" r="3.2" fill="#343433"/>
+          <circle cx="47" cy="37" r="3.2" fill="#343433"/>
+          <circle cx="30.3" cy="35.7" r="1.1" fill="white"/>
+          <circle cx="48.3" cy="35.7" r="1.1" fill="white"/>
+          <!-- smile -->
+          <path d="M29 49 Q38 56 47 49" stroke="#343433" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- legs -->
+          <line x1="30" y1="73" x2="26" y2="92" stroke="#58906a" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="46" y1="73" x2="50" y2="92" stroke="#58906a" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- ══ 4. 膠原 Blob — 莫蘭迪磚紅，mid-right ══ -->
+      <div class="char" style="right:2%; top:46%; width:72px;">
+        <svg viewBox="0 0 74 94" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M37 5C21 5 10 19 10 37C10 55 21 70 37 70C53 70 64 55 64 37C64 19 53 5 37 5Z" fill="#c47878" stroke="#a05858" stroke-width="1.8"/>
+          <!-- bone icon on chest -->
+          <circle cx="28" cy="28" r="4.5" fill="#d89898" opacity="0.65"/>
+          <circle cx="46" cy="28" r="4.5" fill="#d89898" opacity="0.65"/>
+          <rect x="26" y="23.5" width="22" height="9" rx="4.5" fill="#d89898" opacity="0.5"/>
+          <!-- eyes -->
+          <circle cx="28" cy="40" r="3.2" fill="#343433"/>
+          <circle cx="46" cy="40" r="3.2" fill="#343433"/>
+          <circle cx="29.3" cy="38.7" r="1.1" fill="white"/>
+          <circle cx="47.3" cy="38.7" r="1.1" fill="white"/>
+          <!-- smile -->
+          <path d="M28 51 Q37 58 46 51" stroke="#343433" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- legs -->
+          <line x1="29" y1="69" x2="25" y2="88" stroke="#a05858" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="45" y1="69" x2="49" y2="88" stroke="#a05858" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- ══ 5. 粉色小豬 — bottom-left ══ -->
+      <div class="char hide-sm" style="left:8%; bottom:8%; width:70px;">
+        <svg viewBox="0 0 72 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- body -->
+          <ellipse cx="36" cy="56" rx="28" ry="24" fill="#ffb8cc" stroke="#e890aa" stroke-width="1.5"/>
+          <!-- head -->
+          <ellipse cx="36" cy="30" rx="22" ry="20" fill="#ffb8cc" stroke="#e890aa" stroke-width="1.5"/>
+          <!-- ears -->
+          <ellipse cx="18" cy="16" rx="7" ry="9" fill="#ffb8cc" stroke="#e890aa" stroke-width="1.5" transform="rotate(-18 18 16)"/>
+          <ellipse cx="54" cy="16" rx="7" ry="9" fill="#ffb8cc" stroke="#e890aa" stroke-width="1.5" transform="rotate(18 54 16)"/>
+          <ellipse cx="18" cy="16" rx="4" ry="5.5" fill="#e890aa" transform="rotate(-18 18 16)"/>
+          <ellipse cx="54" cy="16" rx="4" ry="5.5" fill="#e890aa" transform="rotate(18 54 16)"/>
+          <!-- snout -->
+          <ellipse cx="36" cy="37" rx="10" ry="7.5" fill="#e890aa"/>
+          <circle cx="32" cy="37" r="2.2" fill="#c05880"/>
+          <circle cx="40" cy="37" r="2.2" fill="#c05880"/>
+          <!-- eyes -->
+          <circle cx="26" cy="24" r="3.2" fill="#343433"/>
+          <circle cx="46" cy="24" r="3.2" fill="#343433"/>
+          <circle cx="27.3" cy="22.7" r="1.1" fill="white"/>
+          <circle cx="47.3" cy="22.7" r="1.1" fill="white"/>
+          <!-- curly tail -->
+          <path d="M64 52 Q74 47 72 40 Q70 33 64 37" stroke="#e890aa" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <!-- legs -->
+          <rect x="18" y="72" width="11" height="14" rx="5.5" fill="#e890aa"/>
+          <rect x="43" y="72" width="11" height="14" rx="5.5" fill="#e890aa"/>
+        </svg>
+      </div>
+
+      <!-- ══ 6. 黑白小牛 — bottom-right ══ -->
+      <div class="char hide-sm" style="right:8%; bottom:5%; width:82px;">
+        <svg viewBox="0 0 84 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- body -->
+          <ellipse cx="42" cy="62" rx="32" ry="26" fill="#f8f8f6" stroke="#c8c8c4" stroke-width="1.5"/>
+          <!-- spots -->
+          <ellipse cx="30" cy="55" rx="10" ry="8" fill="#343433" opacity="0.82"/>
+          <ellipse cx="54" cy="68" rx="8" ry="7" fill="#343433" opacity="0.78"/>
+          <!-- head -->
+          <ellipse cx="42" cy="30" rx="21" ry="19" fill="#f8f8f6" stroke="#c8c8c4" stroke-width="1.5"/>
+          <!-- head spot -->
+          <ellipse cx="38" cy="24" rx="9" ry="6.5" fill="#343433" opacity="0.72"/>
+          <!-- horns -->
+          <path d="M26 14 Q20 4 15 8" stroke="#c8a060" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M58 14 Q64 4 69 8" stroke="#c8a060" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <!-- ears -->
+          <ellipse cx="18" cy="26" rx="6" ry="8" fill="#f8f8f6" stroke="#c8c8c4" stroke-width="1.2" transform="rotate(-12 18 26)"/>
+          <ellipse cx="66" cy="26" rx="6" ry="8" fill="#f8f8f6" stroke="#c8c8c4" stroke-width="1.2" transform="rotate(12 66 26)"/>
+          <ellipse cx="18" cy="26" rx="3.5" ry="5" fill="#ffcccc" transform="rotate(-12 18 26)"/>
+          <ellipse cx="66" cy="26" rx="3.5" ry="5" fill="#ffcccc" transform="rotate(12 66 26)"/>
+          <!-- snout -->
+          <ellipse cx="42" cy="38" rx="10" ry="7" fill="#ffddd8"/>
+          <circle cx="38" cy="38" r="2" fill="#e0a8a0"/>
+          <circle cx="46" cy="38" r="2" fill="#e0a8a0"/>
+          <!-- eyes -->
+          <circle cx="31" cy="24" r="3.5" fill="#343433"/>
+          <circle cx="53" cy="24" r="3.5" fill="#343433"/>
+          <circle cx="32.4" cy="22.6" r="1.2" fill="white"/>
+          <circle cx="54.4" cy="22.6" r="1.2" fill="white"/>
+          <!-- udder -->
+          <ellipse cx="42" cy="84" rx="13" ry="7" fill="#ffddd8" stroke="#e0b0a8" stroke-width="1"/>
+          <!-- legs -->
+          <rect x="22" y="80" width="10" height="16" rx="5" fill="#e0e0dc" stroke="#c8c8c4" stroke-width="1"/>
+          <rect x="52" y="80" width="10" height="16" rx="5" fill="#e0e0dc" stroke="#c8c8c4" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <!-- ══ 7. 豌豆莢 — upper-left cluster ══ -->
+      <div class="char hide-sm" style="left:19%; top:10%; width:56px;">
+        <svg viewBox="0 0 58 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 19 Q5 6 29 6 Q53 6 53 19 Q53 32 29 32 Q5 32 5 19Z" fill="#8ac878" stroke="#56962a" stroke-width="2"/>
+          <!-- pea bumps -->
+          <circle cx="14" cy="19" r="5.5" fill="#56962a" opacity="0.55"/>
+          <circle cx="26" cy="18" r="6" fill="#56962a" opacity="0.6"/>
+          <circle cx="38" cy="18" r="5.5" fill="#56962a" opacity="0.55"/>
+          <circle cx="49" cy="19" r="4.5" fill="#56962a" opacity="0.5"/>
+          <!-- stem + leaf -->
+          <path d="M5 19 Q1 13 3 6" stroke="#56962a" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M3 10 Q-2 6 2 2 Q4 6 3 10Z" fill="#7ac850"/>
+        </svg>
+      </div>
+
+      <!-- ══ 8. 大豆/黃豆 — upper-right ══ -->
+      <div class="char hide-sm" style="right:20%; top:11%; width:42px;">
+        <svg viewBox="0 0 44 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="22" cy="27" rx="18" ry="23" fill="#e8d080" stroke="#c0a030" stroke-width="2"/>
+          <path d="M22 5 Q17 15 17 27 Q17 38 22 49" stroke="#c0a030" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.65"/>
+          <ellipse cx="15" cy="16" rx="5.5" ry="3.5" fill="white" opacity="0.38" transform="rotate(-22 15 16)"/>
+        </svg>
+      </div>
+
+      <!-- ══ 9. 鳳梨 — right of hero ══ -->
+      <div class="char hide-sm" style="right:25%; top:19%; width:50px;">
+        <svg viewBox="0 0 52 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- leaves -->
+          <path d="M26 8 Q18 -3 11 3" stroke="#58964a" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M26 6 Q26 -4 26 0" stroke="#58964a" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M26 8 Q34 -3 41 3" stroke="#58964a" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M26 7 Q20 0 16 1" stroke="#7ab858" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <path d="M26 7 Q32 0 36 1" stroke="#7ab858" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <!-- body -->
+          <ellipse cx="26" cy="46" rx="21" ry="28" fill="#f0c038" stroke="#c09818" stroke-width="1.5"/>
+          <!-- diamond grid -->
+          <line x1="16" y1="22" x2="36" y2="70" stroke="#c09818" stroke-width="1" opacity="0.4"/>
+          <line x1="24" y1="20" x2="42" y2="68" stroke="#c09818" stroke-width="1" opacity="0.4"/>
+          <line x1="28" y1="20" x2="10" y2="68" stroke="#c09818" stroke-width="1" opacity="0.4"/>
+          <line x1="7" y1="36" x2="45" y2="36" stroke="#c09818" stroke-width="1" opacity="0.4"/>
+          <line x1="6" y1="48" x2="46" y2="48" stroke="#c09818" stroke-width="1" opacity="0.4"/>
+          <line x1="8" y1="60" x2="44" y2="60" stroke="#c09818" stroke-width="1" opacity="0.4"/>
+        </svg>
+      </div>
+
+      <!-- ══ 10. 牧草捲 — bottom-left area ══ -->
+      <div class="char hide-sm" style="left:14%; bottom:11%; width:54px;">
+        <svg viewBox="0 0 56 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="28" cy="23" rx="25" ry="21" fill="#d4a848" stroke="#a87a28" stroke-width="2"/>
+          <ellipse cx="28" cy="23" rx="18" ry="14" fill="none" stroke="#a87a28" stroke-width="1.5" opacity="0.6"/>
+          <ellipse cx="28" cy="23" rx="11" ry="8" fill="none" stroke="#a87a28" stroke-width="1.5" opacity="0.5"/>
+          <ellipse cx="28" cy="23" rx="5" ry="3.5" fill="none" stroke="#a87a28" stroke-width="1.2" opacity="0.45"/>
+          <!-- stray hay -->
+          <path d="M4 15 Q0 9 2 5" stroke="#c49838" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M52 15 Q56 9 54 5" stroke="#c49838" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M6 31 Q2 38 4 42" stroke="#c49838" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+
+      <!-- ══ 11. 稻米粒 — bottom-right area ══ -->
+      <div class="char hide-sm" style="right:16%; bottom:15%; width:46px;">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="14" cy="12" rx="6" ry="10" fill="#eeead8" stroke="#c8c0a0" stroke-width="1.5" transform="rotate(12 14 12)"/>
+          <ellipse cx="34" cy="10" rx="6" ry="10" fill="#eeead8" stroke="#c8c0a0" stroke-width="1.5" transform="rotate(-8 34 10)"/>
+          <ellipse cx="10" cy="33" rx="5.5" ry="9.5" fill="#eeead8" stroke="#c8c0a0" stroke-width="1.5" transform="rotate(22 10 33)"/>
+          <ellipse cx="32" cy="35" rx="5.5" ry="9.5" fill="#eeead8" stroke="#c8c0a0" stroke-width="1.5" transform="rotate(-18 32 35)"/>
+          <ellipse cx="22" cy="23" rx="6" ry="10" fill="#eeead8" stroke="#c8c0a0" stroke-width="1.5" transform="rotate(4 22 23)"/>
+        </svg>
+      </div>
+
+      <!-- ══ 12. 紅豆 ══ -->
+      <div class="char hide-sm" style="left:29%; bottom:14%; width:38px;">
+        <svg viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="11" cy="23" rx="8.5" ry="10.5" fill="#b83838" stroke="#903030" stroke-width="1.5" transform="rotate(8 11 23)"/>
+          <ellipse cx="29" cy="23" rx="8.5" ry="10.5" fill="#b83838" stroke="#903030" stroke-width="1.5" transform="rotate(-8 29 23)"/>
+          <ellipse cx="20" cy="11" rx="8.5" ry="10.5" fill="#b83838" stroke="#903030" stroke-width="1.5"/>
+          <path d="M11 14 Q9 23 11 32" stroke="#903030" stroke-width="1" opacity="0.55" stroke-linecap="round" fill="none"/>
+          <path d="M29 14 Q27 23 29 32" stroke="#903030" stroke-width="1" opacity="0.55" stroke-linecap="round" fill="none"/>
+          <path d="M20 2 Q18 11 20 20" stroke="#903030" stroke-width="1" opacity="0.55" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+
+      <!-- ══ 13. 星星 ══ -->
+      <div class="char hide-sm" style="left:27%; top:14%; width:34px;">
+        <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17 3 L20 13 L30 13 L22 19 L25 29 L17 23 L9 29 L12 19 L4 13 L14 13Z" fill="#ffcc22" stroke="#c8a000" stroke-width="1.2"/>
+        </svg>
+      </div>
+
+      <!-- ══ 14. 小星星 ══ -->
+      <div class="char hide-sm" style="right:29%; top:27%; width:24px;">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2 L14 9 L21 9 L15.5 13.5 L17.5 20.5 L12 16.5 L6.5 20.5 L8.5 13.5 L3 9 L10 9Z" fill="#ffcc22" stroke="#c8a000" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <!-- ══ 15. 愛心 ══ -->
+      <div class="char hide-sm" style="right:17%; top:23%; width:30px;">
+        <svg viewBox="0 0 30 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 25 C15 25 3 17 3 10 C3 6.5 6 4 10 4 C12.5 4 15 5.5 15 5.5 C15 5.5 17.5 4 20 4 C24 4 27 6.5 27 10 C27 17 15 25 15 25Z" fill="#c47878"/>
+        </svg>
+      </div>
+
+      <!-- ══ 16. 金幣 ══ -->
+      <div class="char hide-sm" style="left:35%; top:17%; width:34px;">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="18" cy="18" r="16" fill="#f0c030" stroke="#c09018" stroke-width="2"/>
+          <circle cx="18" cy="18" r="10" fill="none" stroke="#c09018" stroke-width="1.2" opacity="0.5"/>
+          <text x="18" y="23" text-anchor="middle" font-size="10" fill="#986800" font-weight="600" font-family="Inter,sans-serif">AA</text>
+        </svg>
+      </div>
+
+      <!-- ══ 17. 閃電 ══ -->
+      <div class="char hide-sm" style="right:34%; top:13%; width:26px;">
+        <svg viewBox="0 0 26 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 2 L6 22 L14 22 L8 36 L20 14 L12 14Z" fill="#ff8c00" stroke="#cc6600" stroke-width="1"/>
+        </svg>
+      </div>
+
+    </div>
+    <!-- /hero-characters -->
+
+    <!-- ── Hero text ── -->
+    <div class="hero-content">
+      <p class="hero-eyebrow">Anti-Fragile Manifesto</p>
+
+      <!-- ⚠️ 核心文案：一字不漏 -->
+      <h1 class="hero-headline">
+        Don't buy<br />
+        this powder.
+      </h1>
+
+      <div class="hero-body">
+        <p>如果你每天有時間好好吃夠肉、蛋、魚，而且消化良好，請不要買蛋白質粉。把錢省下來去買好的原型食物。</p>
+        <p>但如果你正在面對<span class="orange">高壓的工作</span>、衰退的消化力、或是無法從日常飲食中湊齊修復身體所需的建材，那我們來談談<span class="orange">「精準介入」</span>。</p>
+      </div>
+
+      <div class="hero-cta-row">
+        <a class="cta-dark" href="#matrix">
+          探索蛋白質矩陣
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a class="cta-light" href="#solutions">找到你的配方</a>
+      </div>
+
+      <!-- Stat chips -->
+      <div class="hero-stats">
+        <span class="stat-chip">
+          <span class="chip-dot" style="background:var(--meadow);"></span>
+          DIAAS 最高 1.18 — 牛奶蛋白
+        </span>
+        <span class="stat-chip">
+          <span class="chip-dot" style="background:var(--sky);"></span>
+          Casein 緩釋 5–7 小時
+        </span>
+        <span class="stat-chip">
+          <span class="chip-dot" style="background:var(--ember);"></span>
+          植物蛋白需 +20% 劑量
+        </span>
+      </div>
+    </div>
+
+  </section>
+
+  <div class="divider"><hr /></div>
+
+  <!-- ================================================================
+       PROTEIN MATRIX — ACCORDION
+       ================================================================ -->
+  <section class="section" id="matrix">
+    <div class="section-intro">
+      <span class="tag">真實世界建材庫</span>
+      <h2 class="section-title">蛋白質優缺點矩陣</h2>
+      <p class="section-body">五種主流蛋白質的底層機制與你必須知道的限制。沒有神話，只有第一性原理。</p>
+    </div>
+
+    <div class="protein-list" id="protein-grid">
+
+      <!-- ── 1. 乳清蛋白 ── -->
+      <div class="protein-card fade-up" data-index="0">
+        <div class="protein-header" role="button" tabindex="0" aria-expanded="false">
+          <div class="protein-icon" style="background:#fff3ee;">🥛</div>
+          <div class="protein-name-block">
+            <p class="protein-name">乳清蛋白 <span style="font-weight:400; color:var(--ash);">Whey</span></p>
+            <p class="protein-sub">極速吸收 · mTORC1 啟動王</p>
+          </div>
+          <span class="diaas-badge" style="background:#fff3ee; color:#bf2900;">DIAAS ~1.09</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="protein-body">
+          <div class="protein-body-inner">
+            <div class="detail-panel pros">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                底層機制
+              </p>
+              <p>DIAAS ~1.09。<strong>極速吸收</strong>，富含亮胺酸（Leucine），能極速穿過腸道進入血液，直接啟動 <strong>mTORC1 肌肉合成路徑</strong>。是對抗高齡合成阻抗的最佳利器。</p>
+            </div>
+            <div class="detail-panel cons">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                缺點
+              </p>
+              <p>毫無飽足感，<strong>無法當作代餐</strong>。會引發較大胰島素波動。若沒有搭配<strong>阻力訓練</strong>，吃再多也只會變成昂貴的熱量。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 2. 牛奶蛋白 ── -->
+      <div class="protein-card fade-up" data-index="1">
+        <div class="protein-header" role="button" tabindex="0" aria-expanded="false">
+          <div class="protein-icon" style="background:#fffaed;">🍼</div>
+          <div class="protein-name-block">
+            <p class="protein-name">牛奶蛋白 <span style="font-weight:400; color:var(--ash);">Milk / Casein</span></p>
+            <p class="protein-sub">長效緩釋 · 7 小時正氮防護網</p>
+          </div>
+          <span class="diaas-badge" style="background:#fffaed; color:#a07800;">DIAAS ~1.18</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="protein-body">
+          <div class="protein-body-inner">
+            <div class="detail-panel pros">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                底層機制
+              </p>
+              <p>DIAAS ~1.18，目前<strong>評分最高</strong>。在胃酸中形成凝塊，提供長達 <strong>5–7 小時</strong>的緩慢胜肽釋放，建立長效正氮平衡的防禦網。</p>
+            </div>
+            <div class="detail-panel cons">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                缺點
+              </p>
+              <p>無法快速啟動合成信號，<strong>不適合訓後急救</strong>。含有乳糖與酪蛋白，腸道敏感者極易引發<strong>脹氣與發炎</strong>。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 3. 分離大豆蛋白 ── -->
+      <div class="protein-card fade-up" data-index="2">
+        <div class="protein-header" role="button" tabindex="0" aria-expanded="false">
+          <div class="protein-icon" style="background:#edf5ff;">🫘</div>
+          <div class="protein-name-block">
+            <p class="protein-name">分離大豆蛋白 <span style="font-weight:400; color:var(--ash);">Soy Isolate</span></p>
+            <p class="protein-sub">天然氮泵 · 精胺酸 7–8%</p>
+          </div>
+          <span class="diaas-badge" style="background:#edf5ff; color:#0060b8;">DIAAS ~0.90</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="protein-body">
+          <div class="protein-body-inner">
+            <div class="detail-panel pros">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                底層機制
+              </p>
+              <p>DIAAS ~0.90。富含<strong>精胺酸</strong>（高達 7–8%），自帶天然氮泵效應，促進<strong>一氧化氮（NO）生成</strong>與血管舒張，增加全身血流量。</p>
+            </div>
+            <div class="detail-panel cons">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                缺點
+              </p>
+              <p>亮胺酸密度<strong>不如乳清</strong>，增肌極限值較低。即使純化，部分族群仍可能因微量殘留寡糖而<strong>脹氣</strong>。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 4. 豌豆 + 米蛋白 ── -->
+      <div class="protein-card fade-up" data-index="3">
+        <div class="protein-header" role="button" tabindex="0" aria-expanded="false">
+          <div class="protein-icon" style="background:#edfaf2;">🌿</div>
+          <div class="protein-name-block">
+            <p class="protein-name">豌豆 + 米蛋白 <span style="font-weight:400; color:var(--ash);">Plant Alloy</span></p>
+            <p class="protein-sub">植物互補合金 · 零過敏原</p>
+          </div>
+          <span class="diaas-badge" style="background:#edfaf2; color:#1a7a3c;">互補光譜</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="protein-body">
+          <div class="protein-body-inner">
+            <div class="detail-panel pros">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                底層機制
+              </p>
+              <p><strong>避開所有乳糖與大豆過敏原</strong>。豌豆高 BCAA 搭配米蛋白高甲硫胺酸，完美拼湊出媲美動物蛋白的<strong>必需胺基酸光譜</strong>。</p>
+            </div>
+            <div class="detail-panel cons">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                缺點
+              </p>
+              <p>植物基質帶有<strong>抗營養因子</strong>，消化率天生較低。必須提高 <strong>20% 劑量</strong>才能達到同等效果。天然帶有豆腥與沙感，<strong>適口性極具挑戰</strong>。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 5. 膠原蛋白 ── -->
+      <div class="protein-card fade-up" data-index="4">
+        <div class="protein-header" role="button" tabindex="0" aria-expanded="false">
+          <div class="protein-icon" style="background:#fff9e8;">🦴</div>
+          <div class="protein-name-block">
+            <p class="protein-name">膠原蛋白 <span style="font-weight:400; color:var(--ash);">Collagen</span></p>
+            <p class="protein-sub">結締組織修復信號 · 非肌肉蛋白</p>
+          </div>
+          <span class="diaas-badge" style="background:#fff9e8; color:#a07800;">DIAAS 0</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+        <div class="protein-body">
+          <div class="protein-body-inner">
+            <div class="detail-panel pros">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                底層機制
+              </p>
+              <p>含有獨特「<strong>甘胺酸-脯胺酸-羥脯胺酸</strong>」雙/三胜肽，BCP 特定序列胺基酸，不需完全分解即可直接作為<strong>信號</strong>，刺激纖維母細胞修復<strong>關節與皮膚結締組織</strong>。臨床驗證配方 <strong>Fortigel®</strong> 能直接促進白色軟骨組織（White Connective Tissue）增生，顯著<strong>加強關節韌帶與軟骨結構</strong>，是目前對結締組織修復研究最深入的膠原規格。</p>
+            </div>
+            <div class="detail-panel cons">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                缺點
+              </p>
+              <p><strong>長肌肉效率極低</strong>，不適合作為主要蛋白質來源。若沒有搭配足量<strong>維生素C</strong>與充足的基礎熱量，吃進去只會被當作一般熱量燒掉。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 6. 豌豆蛋白（獨立）── -->
+      <div class="protein-card fade-up" data-index="5">
+        <div class="protein-header" role="button" tabindex="0" aria-expanded="false">
+          <div class="protein-icon" style="background:#edfaf2;">🫛</div>
+          <div class="protein-name-block">
+            <p class="protein-name">豌豆蛋白 <span style="font-weight:400; color:var(--ash);">Pea Protein</span></p>
+            <p class="protein-sub">天然氮泵基底 · 高精胺酸 BCAA</p>
+          </div>
+          <span class="diaas-badge" style="background:#edfaf2; color:#1a7a3c;">DIAAS ~0.82</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="protein-body">
+          <div class="protein-body-inner">
+            <div class="detail-panel pros">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                底層機制
+              </p>
+              <p>DIAAS ~0.82。富含 BCAA，<strong>精胺酸（Arginine）含量高達 8%</strong>，促進一氧化氮（NO）生成，帶有天然氮泵效應。不含乳糖、大豆過敏原，是最友好的植物性肌肉蛋白基底。</p>
+            </div>
+            <div class="detail-panel cons">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                缺點
+              </p>
+              <p><strong>離胺酸（Lysine）含量先天不足</strong>，單獨使用時胺基酸光譜不完整，無法與動物蛋白媲美。必須與米蛋白搭配才能解鎖完整效能。帶有明顯<strong>豆腥味</strong>，適口性具挑戰。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 7. 米蛋白（獨立）── -->
+      <div class="protein-card fade-up" data-index="6">
+        <div class="protein-header" role="button" tabindex="0" aria-expanded="false">
+          <div class="protein-icon" style="background:#fffaed;">🌾</div>
+          <div class="protein-name-block">
+            <p class="protein-name">米蛋白 <span style="font-weight:400; color:var(--ash);">Rice Protein</span></p>
+            <p class="protein-sub">含硫胺基酸儲庫 · 超低過敏原</p>
+          </div>
+          <span class="diaas-badge" style="background:#fffaed; color:#a07800;">DIAAS ~0.59</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="protein-body">
+          <div class="protein-body-inner">
+            <div class="detail-panel pros">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                底層機制
+              </p>
+              <p>富含<strong>含硫胺基酸（甲硫胺酸、半胱胺酸）</strong>，是豌豆蛋白的完美拼圖，也是夜間肝臟<strong>穀胱甘肽（GSH）抗氧化合成</strong>的關鍵原料。過敏原風險幾乎為零，腸胃耐受度極高。</p>
+            </div>
+            <div class="detail-panel cons">
+              <p class="panel-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                缺點
+              </p>
+              <p><strong>離胺酸含量極低</strong>，單獨使用時胺基酸光譜嚴重殘缺，無法作為主力蛋白質。質地有<strong>沙感</strong>，口味清淡近似無味。必須與豌豆蛋白搭配才具備實用價值。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /protein-list -->
+  </section>
+
+  <div class="divider"><hr /></div>
+
+  <!-- ================================================================
+       TARGETED SOLUTIONS — TABS
+       ================================================================ -->
+  <section class="section" id="solutions">
+    <div class="section-intro">
+      <span class="tag">精準介入</span>
+      <h2 class="section-title">配比建議</h2>
+      <p class="section-body">根據你真實面對的壓力情境，選擇對應的修復建材配比。</p>
+    </div>
+
+    <div class="tabs-wrapper">
+      <!-- Tab nav -->
+      <div class="tab-nav" role="tablist">
+        <button class="tab-btn active" role="tab" aria-selected="true"  data-tab="senior">熟齡突破阻抗</button>
+        <button class="tab-btn"        role="tab" aria-selected="false" data-tab="exec">高壓長效修復</button>
+        <button class="tab-btn"        role="tab" aria-selected="false" data-tab="vegan">純淨低敏植物引擎</button>
+        <button class="tab-btn"        role="tab" aria-selected="false" data-tab="glp1">GLP-1 肌肉保衛</button>
+        <button class="tab-btn"        role="tab" aria-selected="false" data-tab="sedentary">靜態代謝重啟</button>
+        <button class="tab-btn"        role="tab" aria-selected="false" data-tab="tendon">極限張力裝甲</button>
+        <button class="tab-btn"        role="tab" aria-selected="false" data-tab="nocturnal">深夜自噬防禦</button>
+      </div>
+
+      <!-- ── Tab A: Senior Resilience ── -->
+      <div class="tab-panel active" id="tab-senior">
+
+        <div class="formula-card fade-up">
+          <p class="formula-tag">Senior Resilience</p>
+          <p class="formula-title">熟齡突破阻抗配方</p>
+          <p class="formula-goal">目標：對抗肌肉流失與合成阻抗</p>
+
+          <div class="ratio-bars">
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🥛 乳清蛋白 Whey</span>
+                <span class="r-pct">80%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:80%; background:var(--ember);"></div>
+              </div>
+            </div>
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🦴 膠原蛋白 Collagen</span>
+                <span class="r-pct">20%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:20%; background:var(--sunburst);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formula-desc fade-up">
+          <span class="target-chip" style="background:#fff3ee; color:#bf2900;">
+            🎯 適合族群：50+ / 輕中度肌少症風險
+          </span>
+          <div>
+            <h3>為何這樣配？</h3>
+            <p>利用<strong>高濃度亮胺酸</strong>極速突破合成閾值，讓老化肌肉細胞接收到足夠強烈的 mTORC1 信號。搭配標靶膠原胜肽，鞏固退化的關節與結締組織，確保骨骼框架能撐住新生肌肉的負荷。</p>
+          </div>
+          <div class="insight-box">
+            <p class="i-label">⚡ 科學依據</p>
+            <p>研究指出熟齡者需要比年輕人<strong>高出 40–70% 的亮胺酸濃度</strong>，才能啟動相同的肌肉合成反應。這正是乳清蛋白佔主導的核心原因。</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Tab B: Executive Defense ── -->
+      <div class="tab-panel" id="tab-exec">
+
+        <div class="formula-card fade-up">
+          <p class="formula-tag">Executive Defense</p>
+          <p class="formula-title">高壓長效修復配方</p>
+          <p class="formula-goal">目標：應付會議連軸轉、無法定時進食</p>
+
+          <div class="ratio-bars">
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🍼 牛奶蛋白 Casein</span>
+                <span class="r-pct">60%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:60%; background:var(--sunburst);"></div>
+              </div>
+            </div>
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🫘 分離大豆蛋白 Soy</span>
+                <span class="r-pct">40%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:40%; background:var(--sky);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formula-desc fade-up">
+          <span class="target-chip" style="background:#fffaed; color:#a07800;">
+            🎯 適合族群：高階主管 / 無法定時進食
+          </span>
+          <div>
+            <h3>為何這樣配？</h3>
+            <p>以<strong>牛奶蛋白建立 7 小時緩釋防護網</strong>，防止連續會議中的肌肉分解（Catabolism）。大豆蛋白提供飽足感，並透過 NO 路徑維持腦部與身體血流，確保長時間認知表現不崩塌。</p>
+          </div>
+          <div class="insight-box">
+            <p class="i-label">🧠 科學依據</p>
+            <p>慢性壓力下，皮質醇（Cortisol）會<strong>優先分解肌肉蛋白</strong>作為燃料。緩釋蛋白質的持續供應，是抵抗這個「壓力稅」最直接的介入手段。</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Tab C: Vegan Engine ── -->
+      <div class="tab-panel" id="tab-vegan">
+
+        <div class="formula-card fade-up">
+          <p class="formula-tag">Vegan Engine</p>
+          <p class="formula-title">純淨低敏植物引擎</p>
+          <p class="formula-goal">目標：腸胃極度敏感、乳糖不耐或純素訓練者</p>
+
+          <div class="ratio-bars">
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🌿 豌豆蛋白 Pea</span>
+                <span class="r-pct">70%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:70%; background:var(--meadow);"></div>
+              </div>
+            </div>
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🌾 米蛋白 Rice</span>
+                <span class="r-pct">30%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:30%; background:var(--sunburst);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formula-desc fade-up">
+          <span class="target-chip" style="background:#edfaf2; color:#1a7a3c;">
+            🎯 適合族群：純素者 / IBS / 乳糖不耐
+          </span>
+          <div>
+            <h3>為何這樣配？</h3>
+            <p><strong>黃金互補比例</strong>，完美填補豌豆蛋白欠缺的甲硫胺酸（Methionine）與米蛋白欠缺的離胺酸（Lysine）缺角。建議單次服用量需比常規乳清<strong>多 20%</strong>，以暴力劑量跨越植物蛋白的吸收壁壘。</p>
+          </div>
+          <div class="insight-box">
+            <p class="i-label">🔬 科學依據</p>
+            <p>植物蛋白的抗營養因子（植酸、單寧等）會螯合礦物質並降低酵素活性。<strong>劑量補償</strong>是目前科學文獻中唯一有效的應對策略，並非行銷話術。</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Tab D: GLP-1 Preservation Matrix ── -->
+      <div class="tab-panel" id="tab-glp1">
+
+        <div class="formula-card fade-up">
+          <p class="formula-tag">GLP-1 Preservation Matrix</p>
+          <p class="formula-title">GLP-1 肌肉保衛與防鬆弛配方</p>
+          <p class="formula-goal">目標：使用瘦瘦針、極端熱量赤字或胃繞道手術族群</p>
+
+          <div class="ratio-bars">
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🥛 分離乳清蛋白 WPI</span>
+                <span class="r-pct">70%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:70%; background:var(--ember);"></div>
+              </div>
+            </div>
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🦴 膠原蛋白 Collagen</span>
+                <span class="r-pct">30%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:30%; background:var(--sunburst);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formula-desc fade-up">
+          <span class="target-chip" style="background:#fff3ee; color:#bf2900;">
+            🎯 適合族群：GLP-1 促效劑使用者 / 胃繞道術後
+          </span>
+          <div>
+            <h3>為何這樣配？</h3>
+            <p>GLP-1 會強烈延緩胃排空並壓抑食慾，消化道處於「大塞車」狀態，絕對不能給難以消化的粗糙建材。<strong>分離乳清 WPI</strong> 去除了乳糖與脂肪，能用最少體積、最快動力學，把高濃度亮胺酸強行送入血液，啟動合成訊號；<strong>高比例膠原胜肽（Pro-Hyp）</strong>則精準標靶因脂肪快速流失而失去支撐的真皮層與結締組織，預防俗稱的 Ozempic Face。</p>
+          </div>
+          <div class="insight-box">
+            <p class="i-label">⚠️ 缺點</p>
+            <p>如果你不搭配阻力訓練，瘦瘦針減掉的體重裡，<strong>高達 30–40% 會是你寶貴的肌肉</strong>。這杯配方裡的亮胺酸與膠原胜肽，只能「減緩」你的系統崩塌與皮膚鬆垮。這不是減肥神藥的助攻劑，這是幫你收拾極端代謝代價的善後建材。</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Tab E: Sedentary Metabolic Reboot ── -->
+      <div class="tab-panel" id="tab-sedentary">
+
+        <div class="formula-card fade-up">
+          <p class="formula-tag">Sedentary Metabolic Reboot</p>
+          <p class="formula-title">靜態代謝重啟配方</p>
+          <p class="formula-goal">目標：久坐辦公室、泡芙人、輕度胰島素阻抗族群</p>
+
+          <div class="ratio-bars">
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🫘 分離大豆蛋白 Soy Isolate</span>
+                <span class="r-pct">60%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:60%; background:var(--sky);"></div>
+              </div>
+            </div>
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🍼 牛奶蛋白 Casein</span>
+                <span class="r-pct">40%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:40%; background:var(--sunburst);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formula-desc fade-up">
+          <span class="target-chip" style="background:#edf5ff; color:#0060b8;">
+            🎯 適合族群：久坐辦公 / 泡芙人 / 下午渴望精緻碳水
+          </span>
+          <div>
+            <h3>為何這樣配？</h3>
+            <p>大豆與酪蛋白的混合基質大幅<strong>延緩胃排空</strong>，刺激腸道自身分泌天然飽足激素（PYY 與 GLP-1）。同時，大豆蛋白高達 8% 的精胺酸促進<strong>一氧化氮（NO）生成</strong>，微微舒張末梢微血管，抵銷整天久坐帶來的血流停滯與代謝死水。</p>
+          </div>
+          <div class="insight-box">
+            <p class="i-label">⚠️ 缺點</p>
+            <p>這杯粉<strong>絕對不能幫你燃燒脂肪</strong>。如果你繼續吃反式脂肪、整天黏在椅子上，它只會變成你腰間的多餘熱量。它的唯一物理作用，是用長達 6 小時的飽足感，強行綁住你下午想去拿那塊夾心餅乾的手。</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Tab F: Tension & Tendon Armor ── -->
+      <div class="tab-panel" id="tab-tendon">
+
+        <div class="formula-card fade-up">
+          <p class="formula-tag">Tension &amp; Tendon Armor</p>
+          <p class="formula-title">極限張力與結締裝甲</p>
+          <p class="formula-goal">目標：大重量訓練、CrossFit、關節與韌帶耗損族群</p>
+
+          <div class="ratio-bars">
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🌿 豌豆蛋白 Pea Protein</span>
+                <span class="r-pct">60%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:60%; background:var(--meadow);"></div>
+              </div>
+            </div>
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🦴 膠原蛋白 Collagen</span>
+                <span class="r-pct">40%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:40%; background:var(--sunburst);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formula-desc fade-up">
+          <span class="target-chip" style="background:#edfaf2; color:#1a7a3c;">
+            🎯 適合族群：進階訓練者 / 關節耗損 / 韌帶頻繁發炎
+          </span>
+          <div>
+            <h3>為何這樣配？</h3>
+            <p>肌肉肥大的速度永遠快於肌腱與韌帶的生長——這是進階訓練者容易受傷的底層原因。豌豆蛋白的高精胺酸與 BCAA 作為肌肉引擎；訓前一小時攝取，藉由訓練時的<strong>機械張力（Mechanical Loading）</strong>，將血液中的膠原雙胜肽像導彈一樣，精準壓入缺乏微血管的軟骨與肌腱，促進<strong>細胞外基質（ECM）交聯</strong>。</p>
+          </div>
+          <div class="insight-box">
+            <p class="i-label">⚠️ 缺點</p>
+            <p>它不能治癒你的滑囊炎，也救不了已經撕裂的韌帶。這只是在你的肌肉力量超越韌帶承受極限前，<strong>預先打入的補強鋼筋</strong>。如果你的深蹲動作變形、代償嚴重，再純的膠原胜肽也攔不住你的關節毀滅。</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Tab G: Nocturnal Autophagy Defense ── -->
+      <div class="tab-panel" id="tab-nocturnal">
+
+        <div class="formula-card fade-up">
+          <p class="formula-tag">Nocturnal Autophagy Defense</p>
+          <p class="formula-title">深夜自噬防禦網</p>
+          <p class="formula-goal">目標：睡眠品質差、交感神經亢奮、慢性疲勞族群</p>
+
+          <div class="ratio-bars">
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🍼 牛奶蛋白 Casein</span>
+                <span class="r-pct">80%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:80%; background:var(--sunburst);"></div>
+              </div>
+            </div>
+            <div class="ratio-row">
+              <div class="ratio-meta">
+                <span class="r-name">🌾 米蛋白 Rice Protein</span>
+                <span class="r-pct">20%</span>
+              </div>
+              <div class="ratio-track">
+                <div class="ratio-fill" style="width:20%; background:var(--meadow);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formula-desc fade-up">
+          <span class="target-chip" style="background:#fffaed; color:#a07800;">
+            🎯 適合族群：睡眠障礙 / 慢性疲勞 / 8 小時夜間斷食修復
+          </span>
+          <div>
+            <h3>為何這樣配？</h3>
+            <p>完全針對睡眠期的<strong>蛋白質動力學（Kinetics）</strong>設計。酪蛋白在胃酸中形成的凝乳塊是最完美的緩釋系統，確保 8 小時未進食期間血液中仍有游離胺基酸防止肌肉分解。加入微量米蛋白，是為了利用其較高的<strong>含硫胺基酸（甲硫胺酸、半胱胺酸）</strong>，輔助肝臟在夜間的穀胱甘肽（GSH）抗氧化路徑。</p>
+          </div>
+          <div class="insight-box">
+            <p class="i-label">⚠️ 缺點</p>
+            <p>如果你每天熬夜、睡前滑手機或喝酒助眠，導致<strong>深度睡眠被徹底剝奪</strong>，這杯防禦網的效果趨近於零。生長激素與修復機制是在深睡期才啟動，蛋白粉不會催眠——它只能在你熟睡時，扮演稱職的泥水匠。</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /tabs-wrapper -->
+  </section>
+
+  <div class="divider"><hr /></div>
+
+  <!-- ================================================================
+       FOOTER — DISCLAIMER
+       ================================================================ -->
+  <footer>
+    <p class="disclaimer">
+      <strong>免責聲明</strong> — 我們提供的是壓力測試與修復工具，人體是複雜系統，
+      請依據自身真實消化狀態與生活型態進行精準選擇。
+      本頁面所有資訊僅供教育參考，不構成醫療建議。
+      有特殊疾病或用藥者，請先諮詢醫師或合格營養師。
+    </p>
+    <p class="footer-brand">Resilience System — 人體恢復力系統</p>
+  </footer>
+
+  <!-- ================================================================
+       JAVASCRIPT
+       ================================================================ -->
+  <script>
+    /* ─── 1. ACCORDION ──────────────────────────────────────────── */
+    document.querySelectorAll('.protein-card').forEach(card => {
+      const header = card.querySelector('.protein-header');
+      const body   = card.querySelector('.protein-body');
+
+      const toggle = () => {
+        const isOpen = card.classList.contains('open');
+
+        // Close all
+        document.querySelectorAll('.protein-card').forEach(c => {
+          c.classList.remove('open');
+          c.querySelector('.protein-header').setAttribute('aria-expanded', 'false');
+          c.querySelector('.protein-body').style.maxHeight = '0';
+        });
+
+        // Open if was closed
+        if (!isOpen) {
+          card.classList.add('open');
+          header.setAttribute('aria-expanded', 'true');
+          body.style.maxHeight = body.scrollHeight + 'px';
+        }
+      };
+
+      header.addEventListener('click', toggle);
+      header.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      });
+    });
+
+    /* ─── 2. TABS ───────────────────────────────────────────────── */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-' + target).classList.add('active');
+
+        // Re-trigger fade-up in newly shown tab
+        document.querySelectorAll('#tab-' + target + ' .fade-up').forEach(el => {
+          el.classList.remove('visible');
+          requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
+        });
+      });
+    });
+
+    /* ─── 3. SCROLL FADE-UP ─────────────────────────────────────── */
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.10 });
+
+    document.querySelectorAll('.fade-up').forEach((el, i) => {
+      el.style.transitionDelay = (i % 5) * 0.08 + 's';
+      obs.observe(el);
+    });
+  </script>
+
+</body>
+</html>
